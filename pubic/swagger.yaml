@@ -39,7 +39,7 @@ tags:
   - name: Chat
     description: Chatbot shopping assistant
 paths:
-  /categories:
+  /categories/:
     get:
       tags:
         - Categories
@@ -53,7 +53,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Category'
-  /categories/{id}:
+  /categories/{id}/:
     get:
       tags:
         - Categories
@@ -78,7 +78,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   # Authentication Endpoints
-  /auth/register:
+  /api/auth/register/:
     post:
       tags:
         - Auth
@@ -118,7 +118,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /auth/login:
+  /api/auth/login/:
     post:
       tags:
         - Auth
@@ -150,7 +150,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /auth/logout:
+  /api/auth/logout/:
     post:
       tags:
         - Auth
@@ -166,7 +166,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /auth/user:
+  /api/auth/user/:
     get:
       tags:
         - Auth
@@ -252,7 +252,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /auth/password-reset:
+  /api/auth/password-reset/:
     post:
       tags:
         - Auth
@@ -278,7 +278,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /auth/password-change:
+  /api/auth/change-password/:
     post:
       tags:
         - Auth
@@ -309,7 +309,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   # Statistics and Home
-  /stats:
+  /stats/:
     get:
       tags:
         - Stats
@@ -329,11 +329,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /home:
+  /home/:
     get:
       tags:
         - Home
-      summary: Get home page listings (promoted and latest products/services)
+      summary: Get home page listings (promoted and latest products/api/main/services)
       parameters:
         - name: search
           in: query
@@ -367,7 +367,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/HomePage'
   # Search and Filters
-  /search:
+  /search/:
     get:
       tags:
         - Search
@@ -405,7 +405,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FilterOptions'
   # Products Endpoints
-  /products:
+  /api/main/products/:
     get:
       tags:
         - Products
@@ -485,7 +485,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /products/{id}:
+  /api/main/products/{id}/:
     parameters:
       - name: id
         in: path
@@ -586,7 +586,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /products/{id}/promote:
+  /api/main/products/{id}/promote/:
     parameters:
       - name: id
         in: path
@@ -608,7 +608,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /products/my_products:
+  /api/main/products/my_products:
     get:
       tags:
         - Products
@@ -631,7 +631,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   # Services Endpoints
-  /services:
+  /api/main/services/:
     get:
       tags:
         - Services
@@ -711,7 +711,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /services/{id}:
+  /api/main/services/{id}/:
     parameters:
       - name: id
         in: path
@@ -812,7 +812,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /services/{id}/promote:
+  /api/main/services/{id}/promote/:
     parameters:
       - name: id
         in: path
@@ -834,7 +834,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /services/my_services:
+  /api/main/services/my_services/:
     get:
       tags:
         - Services
@@ -857,7 +857,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   # Product Ratings (nested)
-  /products/{product_pk}/ratings:
+  /api/main/products/{product_pk}/ratings/:
     parameters:
       - name: product_pk
         in: path
@@ -911,7 +911,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /products/{product_pk}/ratings/{id}:
+  /api/main/products/{product_pk}/ratings/{id}/:
     parameters:
       - name: product_pk
         in: path
@@ -1022,7 +1022,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   # Service Ratings (nested)
-  /services/{service_pk}/ratings:
+  /api/main/services/{service_pk}/ratings/:
     parameters:
       - name: service_pk
         in: path
@@ -1076,7 +1076,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /services/{service_pk}/ratings/{id}:
+  /api/main/services/{service_pk}/ratings/{id}/:
     parameters:
       - name: service_pk
         in: path
@@ -1187,7 +1187,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   # Payments Endpoints
-  /payments/initiate:
+  /api/main/payments/initiate/:
     post:
       tags:
         - Payments
@@ -1213,7 +1213,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /payments/verify:
+  /api/main/payments/verify/:
     get:
       tags:
         - Payments
@@ -1238,7 +1238,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   # Chatbot Endpoint
-  /api/:
+  /chatbot/api/:
     post:
       tags:
         - Chat
@@ -1246,7 +1246,7 @@ paths:
       description: |
         Send a message to the Finda shopping assistant chatbot. The bot will:
         1. Recognize user intent (greetings, queries, browsing, etc.)
-        2. Search Finda's database for matching products/services
+        2. Search Finda's database for matching products/api/main/services
         3. Return top results by rating if found
         4. Offer external store suggestions if needed
         5. Use AI fallback for complex queries or no matches.
@@ -1277,7 +1277,7 @@ paths:
                   reply:
                     type: string
                     description: The chatbot's response
-                    example: "I found these on Finda:\n- Nike Air Max 270 — ₦45,000\n  Link: https://yourdomain.com/products/123/\n\nWould you also like suggestions from external stores?"
+                    example: "I found these on Finda:\n- Nike Air Max 270 — ₦45,000\n  Link: https://yourdomain.com/api/main/products/123/\n\nWould you also like suggestions from external stores?"
                 examples:
                   greeting_response:
                     summary: Response to greeting
@@ -1286,7 +1286,7 @@ paths:
                   product_found:
                     summary: Products found in database
                     value:
-                      reply: "I found these on Finda:\n- Nike Air Max 270 — ₦45,000\n  Link: https://yourdomain.com/products/123/\n- Adidas Ultraboost — ₦52,000\n  Link: https://yourdomain.com/products/124/\n\nWould you also like suggestions from external stores (e.g., Amazon, Jumia)?"
+                      reply: "I found these on Finda:\n- Nike Air Max 270 — ₦45,000\n  Link: https://yourdomain.com/api/main/products/123/\n- Adidas Ultraboost — ₦52,000\n  Link: https://yourdomain.com/api/main/products/124/\n\nWould you also like suggestions from external stores (e.g., Amazon, Jumia)?"
                   browse_categories:
                     summary: Category browsing response
                     value:
