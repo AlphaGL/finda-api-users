@@ -1,0 +1,7 @@
+/* assets/css/custom.css */
+.swagger-ui .topbar {
+    background-color: #004d40; /* dark teal */
+}
+.swagger-ui .info h2, .swagger-ui .info .title {
+    font-family: Arial, sans-serif;
+}
