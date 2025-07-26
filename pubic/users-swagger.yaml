@@ -1,0 +1,740 @@
+openapi: 3.0.3
+info:
+  title: Finda Users API
+  description: |
+    User management API for Finda platform. This API handles user authentication,
+    registration, profile management, and password reset functionality.
+    
+    Supports both customer and vendor user types with additional business fields for vendors.
+  version: 1.0.0
+  contact:
+    name: Finda API Support
+    email: ichukwugozirim@gmail.com
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://finda-backend.onrender.com
+    description: Production server
+  - url: http://localhost:8000
+    description: Local development
+
+tags:
+  - name: Authentication
+    description: User registration, login, and logout
+  - name: Profile
+    description: User profile management
+  - name: Password Management
+    description: Password reset and change functionality
+  - name: Dashboard
+    description: User dashboard and account overview
+  - name: Security
+    description: CSRF and security endpoints
+
+paths:
+  # Authentication Endpoints
+  /api/users/register/:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: |
+        Register a new user account. Supports both customer and vendor registration.
+        For vendors, business_name is required. Profile and business images are optional.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /api/users/login/:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      description: Authenticate user and receive authentication token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  description: User's email address
+                  example: "user@example.com"
+                password:
+                  type: string
+                  description: User's password
+                  example: "securepassword123"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        "400":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/users/logout/:
+    post:
+      tags:
+        - Authentication
+      summary: Logout user
+      description: Logout current user by deleting their authentication token
+      security:
+        - TokenAuth: []
+      responses:
+        "200":
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Successfully logged out"
+        "400":
+          description: Error logging out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Profile Management
+  /api/users/me/:
+    get:
+      tags:
+        - Profile
+      summary: Get current user profile
+      description: Retrieve the authenticated user's profile information
+      security:
+        - TokenAuth: []
+      responses:
+        "200":
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Profile
+      summary: Update user profile (full update)
+      description: |
+        Update user profile with all fields. Supports file uploads for profile image
+        and business image (for vendors).
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        "200":
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags:
+        - Profile
+      summary: Partially update user profile
+      description: |
+        Update specific fields of user profile. Supports file uploads for profile image
+        and business image (for vendors).
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        "200":
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Profile
+      summary: Delete user account
+      description: Permanently delete the current user's account
+      security:
+        - TokenAuth: []
+      responses:
+        "200":
+          description: Account deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Account deleted successfully"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Dashboard
+  /api/users/dashboard/:
+    get:
+      tags:
+        - Dashboard
+      summary: Get user dashboard data
+      description: |
+        Retrieve user's dashboard information including their products and services.
+        Shows both regular and promoted listings with counts.
+      security:
+        - TokenAuth: []
+      responses:
+        "200":
+          description: Dashboard data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Password Management
+  /api/users/password-reset/:
+    post:
+      tags:
+        - Password Management
+      summary: Request password reset
+      description: |
+        Send password reset email to user. For security reasons, always returns success
+        message regardless of whether email exists.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to send reset link to
+                  example: "user@example.com"
+      responses:
+        "200":
+          description: Password reset email sent (if email exists)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "If an account with this email exists, a password reset link has been sent."
+        "400":
+          description: Invalid email format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /api/users/password-reset-confirm/:
+    post:
+      tags:
+        - Password Management
+      summary: Confirm password reset
+      description: |
+        Complete password reset using token from email link.
+        Requires uid, token from email, and new password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - uid
+                - token
+                - password
+                - password2
+              properties:
+                uid:
+                  type: string
+                  description: Base64 encoded user ID from reset email
+                  example: "MjM"
+                token:
+                  type: string
+                  description: Reset token from email
+                  example: "abc123-def456-ghi789"
+                password:
+                  type: string
+                  description: New password
+                  example: "newSecurePassword123"
+                password2:
+                  type: string
+                  description: Confirm new password
+                  example: "newSecurePassword123"
+      responses:
+        "200":
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset successful"
+        "400":
+          description: Invalid token, passwords don't match, or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /api/users/change-password/:
+    post:
+      tags:
+        - Password Management
+      summary: Change current password
+      description: |
+        Change password for authenticated user. Requires current password verification.
+        Returns new authentication token.
+      security:
+        - TokenAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - old_password
+                - new_password
+              properties:
+                old_password:
+                  type: string
+                  description: Current password
+                  example: "currentPassword123"
+                new_password:
+                  type: string
+                  description: New password
+                  example: "newSecurePassword123"
+      responses:
+        "200":
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password changed successfully"
+                  token:
+                    type: string
+                    description: New authentication token
+                    example: "9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b"
+        "400":
+          description: Missing fields or incorrect current password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Security
+  /api/users/api/csrf/:
+    get:
+      tags:
+        - Security
+      summary: Get CSRF token
+      description: Retrieve CSRF token for client-side applications
+      responses:
+        "200":
+          description: CSRF token set
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    example: "CSRF cookie set"
+
+components:
+  securitySchemes:
+    TokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: "Token-based authentication. Use format: `Token <your-token>`"
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique user identifier
+          example: 123
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: "user@example.com"
+        first_name:
+          type: string
+          description: User's first name
+          example: "John"
+        last_name:
+          type: string
+          description: User's last name
+          example: "Doe"
+        phone:
+          type: string
+          description: User's phone number
+          example: "+2348012345678"
+        profile:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to user's profile image
+          example: "https://example.com/media/profiles/user123.jpg"
+        date_joined:
+          type: string
+          format: date-time
+          description: When user account was created
+          example: "2024-01-15T10:30:00Z"
+        user_type:
+          type: string
+          enum: ["customer", "vendor"]
+          description: Type of user account
+          example: "customer"
+        business_name:
+          type: string
+          nullable: true
+          description: Business name (for vendors only)
+          example: "Tech Solutions Ltd"
+        business_description:
+          type: string
+          nullable: true
+          description: Business description (for vendors only)
+          example: "We provide innovative tech solutions"
+        business_image:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to business image (for vendors only)
+          example: "https://example.com/media/business/tech-solutions.jpg"
+
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - first_name
+        - last_name
+        - phone
+        - password
+        - password2
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address (must be unique)
+          example: "newuser@example.com"
+        first_name:
+          type: string
+          description: User's first name
+          example: "Jane"
+        last_name:
+          type: string
+          description: User's last name
+          example: "Smith"
+        phone:
+          type: string
+          description: User's phone number (must be unique if provided)
+          example: "+2348012345678"
+        password:
+          type: string
+          description: User's password (will be validated)
+          example: "securePassword123!"
+        password2:
+          type: string
+          description: Confirm password (must match password)
+          example: "securePassword123!"
+        profile:
+          type: string
+          format: binary
+          description: Profile image file (optional)
+        user_type:
+          type: string
+          enum: ["customer", "vendor"]
+          default: "customer"
+          description: Type of user account
+          example: "vendor"
+        business_name:
+          type: string
+          description: Business name (required if user_type is 'vendor')
+          example: "Jane's Consulting"
+        business_description:
+          type: string
+          description: Business description (optional for vendors)
+          example: "Professional consulting services"
+        business_image:
+          type: string
+          format: binary
+          description: Business image file (optional for vendors)
+
+    RegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Registration successful"
+        token:
+          type: string
+          description: Authentication token
+          example: "9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b"
+        user:
+          $ref: '#/components/schemas/User'
+
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Login successful"
+        token:
+          type: string
+          description: Authentication token
+          example: "9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b"
+        user:
+          $ref: '#/components/schemas/User'
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          description: User's first name
+          example: "John"
+        last_name:
+          type: string
+          description: User's last name
+          example: "Doe"
+        phone:
+          type: string
+          description: User's phone number
+          example: "+2348012345678"
+        profile:
+          type: string
+          format: binary
+          description: Profile image file
+        business_name:
+          type: string
+          description: Business name (for vendors only)
+          example: "Updated Business Name"
+        business_description:
+          type: string
+          description: Business description (for vendors only)
+          example: "Updated business description"
+        business_image:
+          type: string
+          format: binary
+          description: Business image file (for vendors only)
+
+    DashboardResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        products:
+          type: object
+          properties:
+            all:
+              type: array
+              description: All products owned by user
+              items:
+                $ref: '#/components/schemas/Product'
+            promoted:
+              type: array
+              description: Promoted products owned by user
+              items:
+                $ref: '#/components/schemas/Product'
+            count:
+              type: integer
+              description: Total number of products
+              example: 15
+        services:
+          type: object
+          properties:
+            all:
+              type: array
+              description: All services owned by user
+              items:
+                $ref: '#/components/schemas/Service'
+            promoted:
+              type: array
+              description: Promoted services owned by user
+              items:
+                $ref: '#/components/schemas/Service'
+            count:
+              type: integer
+              description: Total number of services
+              example: 8
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 123
+        product_name:
+          type: string
+          example: "iPhone 14 Pro"
+        product_price:
+          type: number
+          example: 450000
+        product_category:
+          type: string
+          example: "Electronics"
+        is_promoted:
+          type: boolean
+          example: true
+        # Add other product fields as needed
+
+    Service:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 456
+        service_name:
+          type: string
+          example: "Web Development"
+        service_category:
+          type: string
+          example: "Technology"
+        is_promoted:
+          type: boolean
+          example: false
+        # Add other service fields as needed
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Invalid credentials"
+
+    ValidationError:
+      type: object
+      properties:
+        field_name:
+          type: array
+          items:
+            type: string
+          description: List of validation errors for the field
+          example: ["This field is required."]
+      additionalProperties:
+        type: array
+        items:
+          type: string
+      example:
+        email: ["A user with this email already exists."]
+        password: ["Password fields didn't match."]
+        business_name: ["Business name is required for vendors."]
