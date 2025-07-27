@@ -34,7 +34,7 @@ tags:
 
 paths:
   # Authentication Endpoints
-  /api/users/register/:
+  /api/auth/register/:
     post:
       tags:
         - Authentication
@@ -65,7 +65,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationError'
 
-  /api/users/login/:
+  /api/auth/login/:
     post:
       tags:
         - Authentication
@@ -103,7 +103,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /api/users/logout/:
+  /api/auth/logout/:
     post:
       tags:
         - Authentication
@@ -136,7 +136,7 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   # Profile Management
-  /api/users/me/:
+  /api/auth/me/:
     get:
       tags:
         - Profile
@@ -260,7 +260,7 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   # Dashboard
-  /api/users/dashboard/:
+  /api/auth/dashboard/:
     get:
       tags:
         - Dashboard
@@ -285,7 +285,7 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   # Password Management
-  /api/users/password-reset/:
+  /api/auth/password-reset/:
     post:
       tags:
         - Password Management
@@ -325,7 +325,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationError'
 
-  /api/users/password-reset-confirm/:
+  /api/auth/password-reset-confirm/:
     post:
       tags:
         - Password Management
@@ -379,7 +379,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationError'
 
-  /api/users/change-password/:
+  /api/auth/change-password/:
     post:
       tags:
         - Password Management
@@ -436,7 +436,7 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   # Security
-  /api/users/api/csrf/:
+  /api/auth/api/csrf/:
     get:
       tags:
         - Security
